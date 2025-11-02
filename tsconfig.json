@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "jsx": "react-jsx",
+    "strict": true,
+    "moduleResolution": "Bundler",
+    "baseUrl": ".",
+    "paths": {"@/*": ["./src/*"]},
+    
+    "ignoreDeprecations": "6.0"   // 👈 adiciona isto
+  },
+  "extends": "expo/tsconfig.base"
+}

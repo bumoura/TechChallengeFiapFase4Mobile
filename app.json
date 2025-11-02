@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "TC4 Mobile",
+    "slug": "tc4-mobile",
+    "scheme": "tc4mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": [
+      [
+        "expo-router"
+      ]
+    ],
+    "extra": {
+      "apiUrl": "http://10.0.2.2:3000"
+    }
+  }
+}

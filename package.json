@@ -1,0 +1,32 @@
+{
+  "name": "tc4-mobile",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^3.9.0",
+    "axios": "^1.7.7",
+    "expo": "^54.0.21",
+    "expo-router": "~6.0.14",
+    "expo-secure-store": "~13.0.0",
+    "expo-status-bar": "~3.0.6",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-hook-form": "^7.53.0",
+    "react-native": "0.81.4",
+    "react-native-safe-area-context": "^5.4.0",
+    "react-native-screens": "~4.9.0",
+    "react-native-web": "^0.21.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "@types/react": "^19.1.0"
+  }
+}
