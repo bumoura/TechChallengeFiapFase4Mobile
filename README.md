@@ -12,3 +12,5 @@ Edite `app.json > expo.extra.apiUrl` para apontar ao backend (Android emulador: 
 - Login/Logout + autorização por perfil.
 - Admin: CRUD de posts.
 - Admin: CRUD paginado de docentes e alunos.
+
+-
