@@ -6,15 +6,19 @@ import { useAuth } from '@/context/AuthContext';
 export default function Login() {
   const [email, setEmail] = useState('prof@fiap.com');
   const [password, setPassword] = useState('prof123');
+  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
 
   const onSubmit = async () => {
+    setLoading(true);
     try {
       await login(email, password);
       router.replace('/(tabs)');
     } catch (e: any) {
       Alert.alert('Erro', e?.response?.data?.message ?? 'Falha no login');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -25,8 +29,8 @@ export default function Login() {
         style={{ borderWidth: 1, borderRadius: 8, padding: 12 }} />
       <TextInput value={password} onChangeText={setPassword} placeholder="Senha" secureTextEntry
         style={{ borderWidth: 1, borderRadius: 8, padding: 12 }} />
-      <TouchableOpacity onPress={onSubmit} style={{ backgroundColor: '#0a7', padding: 14, borderRadius: 12 }}>
-        <Text style={{ color: 'white', textAlign: 'center', fontWeight: '700' }}>Entrar</Text>
+      <TouchableOpacity onPress={onSubmit} disabled={loading} style={{ backgroundColor: '#0a7', padding: 14, borderRadius: 12 }}>
+        <Text style={{ color: 'white', textAlign: 'center', fontWeight: '700' }}>{loading ? 'Carregando...' : 'Entrar'}</Text>
       </TouchableOpacity>
     </View>
   );
