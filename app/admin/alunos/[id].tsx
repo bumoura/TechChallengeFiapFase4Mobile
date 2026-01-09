@@ -1,42 +1,108 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
+import { Text, TextInput, TouchableOpacity, View, Alert, StyleSheet, SafeAreaView, ActivityIndicator } from 'react-native';
 import api from '@/lib/api';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-const schema = z.object({ nome: z.string().min(2,'Obrigatório'), email: z.string().email('E-mail inválido') });
+import { Ionicons } from '@expo/vector-icons';
+
+const schema = z.object({ 
+  nome: z.string().min(2, 'Obrigatório'), 
+  email: z.string().email('E-mail inválido') 
+});
+
 type FormData = z.infer<typeof schema>;
+
 export default function EditAluno() {
-  const { id } = useLocalSearchParams<{id: string}>();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const { control, handleSubmit, setValue, formState: { errors } } = useForm<FormData>({ resolver: zodResolver(schema) });
   const router = useRouter();
-  useEffect(() => { (async () => {
-    const res = await api.get(`/alunos/${id}`).catch(()=>null);
-    if (!res) return;
-    const { nome, email } = res.data;
-    setValue('nome', nome); setValue('email', email);
-  })(); }, [id]);
+  const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await api.get(`/alunos/${id}`);
+        setValue('nome', res.data.nome);
+        setValue('email', res.data.email);
+      } catch (error) {
+        Alert.alert('Erro', 'Não foi possível carregar os dados.');
+        router.back();
+      } finally {
+        setFetching(false);
+      }
+    })();
+  }, [id]);
+
   const onSubmit = async (data: FormData) => {
-    await api.put(`/alunos/${id}`, data);
-    Alert.alert('Sucesso', 'Aluno atualizado!');
-    router.back();
+    setLoading(true);
+    try {
+      await api.put(`/alunos/${id}`, data);
+      Alert.alert('Sucesso', 'Dados do aluno atualizados!');
+      router.back();
+    } catch (error) {
+      Alert.alert('Erro', 'Falha na atualização.');
+    } finally {
+      setLoading(false);
+    }
   };
-  const Field = ({ name, placeholder }: any) => (
-    <Controller control={control} name={name} render={({ field: { onChange, value } }) => (
-      <TextInput placeholder={placeholder} value={value} onChangeText={onChange}
-        style={{ borderWidth: 1, borderRadius: 8, padding: 12 }} />
-    )} />
-  );
-  return (
-    <View style={{ flex: 1, padding: 16, gap: 8 }}>
-      <Field name="nome" placeholder="Nome" />
-      {errors.nome && <Text style={{ color: 'red' }}>{errors.nome.message}</Text>}
-      <Field name="email" placeholder="Email" />
-      {errors.email && <Text style={{ color: 'red' }}>{errors.email.message}</Text>}
-      <TouchableOpacity onPress={handleSubmit(onSubmit)} style={{ backgroundColor: '#08c', padding: 14, borderRadius: 12 }}>
-        <Text style={{ color: 'white', textAlign: 'center', fontWeight: '700' }}>Salvar</Text>
-      </TouchableOpacity>
+
+  const Field = ({ name, placeholder, label }: any) => (
+    <View style={styles.inputGroup}>
+      <Text style={styles.label}>{label}</Text>
+      <Controller control={control} name={name} render={({ field: { onChange, value } }) => (
+        <TextInput 
+          placeholder={placeholder}
+          placeholderTextColor="#94A3B8" 
+          value={value} 
+          onChangeText={onChange}
+          style={styles.input} 
+        />
+      )} />
     </View>
   );
+
+  if (fetching) {
+    return <View style={styles.center}><ActivityIndicator size="large" color="#2563EB" /></View>;
+  }
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <Ionicons name="arrow-back" size={24} color="#1E293B" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Editar Aluno</Text>
+      </View>
+
+      <View style={styles.form}>
+        <Field name="nome" placeholder="Nome" label="Nome Completo" />
+        {errors.nome && <Text style={styles.error}>{errors.nome.message}</Text>}
+        
+        <Field name="email" placeholder="Email" label="E-mail" />
+        {errors.email && <Text style={styles.error}>{errors.email.message}</Text>}
+        
+        <TouchableOpacity onPress={handleSubmit(onSubmit)} disabled={loading} style={styles.saveButton}>
+          {loading ? <ActivityIndicator color="white" /> : <Text style={styles.saveText}>Salvar Alterações</Text>}
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#F8FAFC' },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  header: { padding: 16, flexDirection: 'row', alignItems: 'center', gap: 16, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
+  headerTitle: { fontSize: 18, fontWeight: '700', color: '#1E293B' },
+  backBtn: { padding: 4 },
+  form: { padding: 24, gap: 16 },
+  inputGroup: { gap: 8 },
+  label: { fontSize: 14, fontWeight: '600', color: '#334155', marginLeft: 4 },
+  input: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 12, padding: 16, fontSize: 16, color: '#0F172A' },
+  error: { color: '#EF4444', fontSize: 12, marginLeft: 4, marginTop: -8 },
+  saveButton: { backgroundColor: '#2563EB', paddingVertical: 16, borderRadius: 12, marginTop: 20, alignItems: 'center', shadowColor: '#2563EB', shadowOpacity: 0.2, shadowRadius: 8 },
+  saveText: { color: 'white', fontSize: 16, fontWeight: '700' },
+});

@@ -8,7 +8,7 @@
     "baseUrl": ".",
     "paths": {"@/*": ["./src/*"]},
     
-    "ignoreDeprecations": "6.0"   // 👈 adiciona isto
+    "ignoreDeprecations": "6.0"   
   },
   "extends": "expo/tsconfig.base"
 }
