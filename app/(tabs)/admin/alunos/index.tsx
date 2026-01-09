@@ -1,93 +1,131 @@
-import { useRouter } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { 
+  Alert, 
   FlatList, 
   Text, 
-  TextInput, 
   TouchableOpacity, 
   View, 
   StyleSheet, 
   SafeAreaView, 
-  StatusBar,
+  ActivityIndicator,
   RefreshControl 
 } from 'react-native';
 import api from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 
-type Post = { _id: string; title: string; content: string; author: string };
+type Aluno = { _id: string; nome: string; email: string };
+type Paged<T> = { items: T[]; total: number; page: number; limit: number };
 
-export default function Posts() {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [q, setQ] = useState('');
+export default function AlunosList() {
+  const [data, setData] = useState<Paged<Aluno>>({ items: [], total: 0, page: 1, limit: 10 });
+  const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
+  const { user } = useAuth();
 
-  const load = async () => {
-    const url = q ? `/posts/search?term=${encodeURIComponent(q)}` : '/posts';
+  const load = async (page = 1) => {
+    if (user?.role !== 'professor') return;
+
+    setLoading(true);
     try {
-      const res = await api.get(url);
-      setPosts(res.data);
-    } catch (error) {
-      console.log(error);
+      const res = await api.get(`/alunos?page=${page}&limit=${data.limit}`);
+      setData(res.data);
+    } catch (e) { 
+      console.log('Erro ao carregar alunos:', e);
+      Alert.alert('Erro', 'Não foi possível carregar a lista de alunos.');
+    } finally {
+      setLoading(false);
     }
   };
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await load();
+    await load(1);
     setRefreshing(false);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(1); }, []);
+
+  const removeItem = (id: string) => {
+    Alert.alert('Confirmar Exclusão', 'Remover este aluno permanentemente?', [
+      { text: 'Cancelar', style: 'cancel' },
+      { text: 'Excluir', style: 'destructive', onPress: async () => { 
+        try {
+          await api.delete(`/alunos/${id}`); 
+          load(data.page); 
+        } catch(e) {
+          Alert.alert('Erro', 'Falha ao excluir.');
+        }
+      }}
+    ]);
+  };
+
+  if (user?.role !== 'professor') {
+    return (
+      <View style={styles.center}>
+        <Ionicons name="lock-closed-outline" size={64} color="#CBD5E1" />
+        <Text style={{ color: '#64748B', marginTop: 16 }}>Acesso restrito a professores.</Text>
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Feed de Notícias</Text>
-      </View>
-
-      <View style={styles.searchContainer}>
-        <View style={styles.inputWrapper}>
-          <Ionicons name="search" size={20} color="#94A3B8" style={{ marginRight: 8 }} />
-          <TextInput
-            placeholder="Buscar por palavra-chave..."
-            placeholderTextColor="#94A3B8"
-            value={q}
-            onChangeText={setQ}
-            onSubmitEditing={load}
-            style={styles.input}
-          />
-        </View>
+        <Text style={styles.headerTitle}>Gestão de Alunos</Text>
+        <Link href="/admin/alunos/new" asChild>
+          <TouchableOpacity style={styles.addButton}>
+            <Ionicons name="add" size={24} color="white" />
+          </TouchableOpacity>
+        </Link>
       </View>
 
       <FlatList
-        data={posts}
-        keyExtractor={(item) => item._id}
-        contentContainerStyle={styles.listContent}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#2563EB']} />
-        }
+        data={data.items}
+        keyExtractor={(i) => i._id}
+        contentContainerStyle={styles.list}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#2563EB']} />}
         renderItem={({ item }) => (
-          <TouchableOpacity 
-            activeOpacity={0.7}
-            onPress={() => router.push(`/post/${item._id}`)} 
-            style={styles.card}
-          >
-            <View style={styles.cardHeader}>
-              <Text style={styles.cardTitle}>{item.title}</Text>
-              <Text style={styles.cardAuthor}>Por {item.author}</Text>
+          <View style={styles.card}>
+            <View style={styles.iconContainer}>
+              <Ionicons name="school" size={24} color="#2563EB" />
             </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.cardTitle}>{item.nome}</Text>
+              <Text style={styles.cardSubtitle}>{item.email}</Text>
+            </View>
+            <View style={styles.actions}>
+              <TouchableOpacity onPress={() => router.push(`/admin/alunos/${item._id}`)} style={styles.actionBtn}>
+                <Ionicons name="create-outline" size={20} color="#2563EB" />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => removeItem(item._id)} style={styles.actionBtn}>
+                <Ionicons name="trash-outline" size={20} color="#EF4444" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+        ListFooterComponent={() => (
+          <View style={styles.pagination}>
+            <TouchableOpacity 
+              disabled={data.page <= 1 || loading} 
+              onPress={() => load(data.page - 1)} 
+              style={[styles.pageBtn, data.page <= 1 && styles.disabledBtn]}
+            >
+              <Ionicons name="chevron-back" size={20} color={data.page <= 1 ? '#CBD5E1' : '#1E293B'} />
+            </TouchableOpacity>
             
-            <Text numberOfLines={3} style={styles.cardContent}>
-              {item.content}
-            </Text>
-
-            <View style={styles.readMoreContainer}>
-              <Text style={styles.readMoreText}>Ler completa</Text>
-              <Ionicons name="arrow-forward" size={16} color="#2563EB" />
-            </View>
-          </TouchableOpacity>
+            <Text style={styles.pageText}>Pág {data.page}</Text>
+            
+            <TouchableOpacity 
+              disabled={data.page * data.limit >= data.total || loading} 
+              onPress={() => load(data.page + 1)} 
+              style={[styles.pageBtn, (data.page * data.limit >= data.total) && styles.disabledBtn]}
+            >
+              <Ionicons name="chevron-forward" size={20} color={(data.page * data.limit >= data.total) ? '#CBD5E1' : '#1E293B'} />
+            </TouchableOpacity>
+          </View>
         )}
       />
     </SafeAreaView>
@@ -96,56 +134,30 @@ export default function Posts() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F8FAFC' },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F8FAFC' },
   header: { 
-    padding: 20, 
-    backgroundColor: '#fff', 
-    borderBottomWidth: 1, 
-    borderBottomColor: '#F1F5F9' 
+    padding: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', 
+    backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F1F5F9' 
   },
   headerTitle: { fontSize: 24, fontWeight: '800', color: '#1E293B' },
-  searchContainer: { padding: 16 },
-  inputWrapper: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    backgroundColor: '#FFFFFF', 
-    borderRadius: 12, 
-    paddingHorizontal: 12, 
-    borderWidth: 1, 
-    borderColor: '#E2E8F0', 
-    height: 50 
+  addButton: { 
+    backgroundColor: '#2563EB', width: 40, height: 40, borderRadius: 20, 
+    justifyContent: 'center', alignItems: 'center', shadowColor: '#2563EB', shadowOpacity: 0.3, shadowRadius: 4 
   },
-  input: { flex: 1, fontSize: 16, color: '#1E293B' },
-  listContent: { paddingHorizontal: 16, paddingBottom: 20, gap: 16 }, 
-  card: {
-    backgroundColor: '#FFFFFF', 
-    borderRadius: 16, 
-    padding: 20,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    shadowColor: '#000', 
-    shadowOffset: { width: 0, height: 2 }, 
-    shadowOpacity: 0.05, 
-    shadowRadius: 4, 
-    elevation: 2
+  list: { padding: 16, gap: 12 },
+  card: { 
+    backgroundColor: '#FFFFFF', padding: 16, borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 12,
+    borderWidth: 1, borderColor: '#E2E8F0' 
   },
-  cardHeader: { marginBottom: 8 },
-  cardTitle: { fontSize: 18, fontWeight: '700', color: '#1E293B', marginBottom: 4 },
-  cardAuthor: { fontSize: 13, color: '#64748B', fontStyle: 'italic' },
-  cardContent: { 
-    fontSize: 15, 
-    color: '#334155', 
-    lineHeight: 22, 
-    marginBottom: 16 
+  iconContainer: {
+    width: 40, height: 40, borderRadius: 20, backgroundColor: '#EFF6FF', justifyContent: 'center', alignItems: 'center'
   },
-  readMoreContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end', 
-    gap: 4
-  },
-  readMoreText: { 
-    color: '#2563EB', 
-    fontWeight: '700', 
-    fontSize: 14 
-  },
+  cardTitle: { fontWeight: '600', fontSize: 16, color: '#1E293B' },
+  cardSubtitle: { color: '#64748B', fontSize: 13, marginTop: 2 },
+  actions: { flexDirection: 'row', gap: 8 },
+  actionBtn: { padding: 8, backgroundColor: '#F1F5F9', borderRadius: 8 },
+  pagination: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 20, gap: 16 },
+  pageBtn: { padding: 10, backgroundColor: '#fff', borderRadius: 8, borderWidth: 1, borderColor: '#E2E8F0' },
+  disabledBtn: { backgroundColor: '#F1F5F9', borderColor: '#F1F5F9' },
+  pageText: { fontSize: 16, fontWeight: '600', color: '#1E293B' },
 });

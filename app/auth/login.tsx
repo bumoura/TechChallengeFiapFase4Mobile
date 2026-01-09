@@ -45,8 +45,8 @@ export default function Login() {
         style={styles.content}
       >
         <View style={styles.headerContainer}>
-          <Text style={styles.title}>Bem-vindo</Text>
-          <Text style={styles.subtitle}>Insira suas credenciais para acessar o portal.</Text>
+          <Text style={styles.title}>Portal FIAP</Text>
+          <Text style={styles.subtitle}>Faça login para gerenciar o sistema.</Text>
         </View>
 
         <View style={styles.formContainer}>
@@ -94,73 +94,22 @@ export default function Login() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F8FAFC', 
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 24,
-  },
-  headerContainer: {
-    marginBottom: 32,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#1E293B', 
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#64748B', 
-    lineHeight: 24,
-  },
-  formContainer: {
-    gap: 20,
-  },
-  inputGroup: {
-    gap: 8,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#334155', 
-    marginLeft: 4,
-  },
+  container: { flex: 1, backgroundColor: '#F8FAFC' },
+  content: { flex: 1, justifyContent: 'center', padding: 24 },
+  headerContainer: { marginBottom: 32 },
+  title: { fontSize: 32, fontWeight: 'bold', color: '#1E293B', marginBottom: 8 },
+  subtitle: { fontSize: 16, color: '#64748B' },
+  formContainer: { gap: 20 },
+  inputGroup: { gap: 8 },
+  label: { fontSize: 14, fontWeight: '600', color: '#334155', marginLeft: 4 },
   input: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E2E8F0', 
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    color: '#0F172A',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 12, padding: 16,
+    fontSize: 16, color: '#0F172A'
   },
   button: {
-    backgroundColor: '#2563EB', 
-    paddingVertical: 16,
-    borderRadius: 12,
-    marginTop: 12,
-    alignItems: 'center',
-    shadowColor: '#2563EB',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
+    backgroundColor: '#2563EB', paddingVertical: 16, borderRadius: 12, marginTop: 12, alignItems: 'center',
+    shadowColor: '#2563EB', shadowOpacity: 0.2, shadowRadius: 8, elevation: 4
   },
-  buttonDisabled: {
-    backgroundColor: '#93C5FD', 
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '700',
-  },
+  buttonDisabled: { backgroundColor: '#93C5FD' },
+  buttonText: { color: 'white', fontSize: 16, fontWeight: '700' },
 });
