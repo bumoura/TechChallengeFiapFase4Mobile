@@ -1,12 +1,13 @@
 import axios from 'axios';
-import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import storage from '@/lib/storage';
+
+const SEU_IP_LOCAL = '192.168.0.8'; 
 
 const baseURL =
   Platform.OS === 'web'
     ? 'http://127.0.0.1:3000'
-    : ((Constants.expoConfig?.extra as any)?.apiUrl ?? 'http://10.0.2.2:3000');
+    : `http://192.168.0.8:3000`;
 
 console.log('API baseURL:', baseURL);
 

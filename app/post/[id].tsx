@@ -41,18 +41,16 @@ export default function PostDetail() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#F8FAFC" />
       
-      {/* Header Fixo Simples */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
           <Ionicons name="arrow-back" size={24} color="#1E293B" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Artigo</Text>
-        <View style={{ width: 24 }} /> {/* Espaçador para centralizar o título */}
+        <View style={{ width: 24 }} />
       </View>
       
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.articleCard}>
-          {/* Tag / Categoria Visual */}
           <View style={styles.badgeContainer}>
             <View style={styles.badge}>
               <Text style={styles.badgeText}>NOTÍCIA</Text>
@@ -64,7 +62,7 @@ export default function PostDetail() {
           <View style={styles.metaContainer}>
             <View style={styles.authorRow}>
               <View style={styles.avatarPlaceholder}>
-                <Text style={styles.avatarLetter}>{post.author.charAt(0).toUpperCase()}</Text>
+                <Text style={styles.avatarLetter}>{post.author ? post.author.charAt(0).toUpperCase() : '?'}</Text>
               </View>
               <View>
                 <Text style={styles.authorName}>{post.author}</Text>
@@ -85,7 +83,7 @@ export default function PostDetail() {
 const styles = StyleSheet.create({
   container: { 
     flex: 1, 
-    backgroundColor: '#F8FAFC', // Fundo geral Ice Gray
+    backgroundColor: '#F8FAFC',
   },
   loadingContainer: {
     flex: 1,
@@ -123,19 +121,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 24,
     padding: 24,
-    // Sombras
     shadowColor: '#64748B',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.08,
     shadowRadius: 16,
     elevation: 4,
-  }, // <--- A VÍRGULA ESTAVA FALTANDO AQUI NO SEU CÓDIGO PROVAVELMENTE
+  },
   badgeContainer: {
     flexDirection: 'row',
     marginBottom: 16,
   },
   badge: {
-    backgroundColor: '#EFF6FF', // Azul bem claro
+    backgroundColor: '#EFF6FF',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
