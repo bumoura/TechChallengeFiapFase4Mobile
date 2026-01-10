@@ -10,7 +10,6 @@ import {
   Alert, 
   StyleSheet, 
   SafeAreaView, 
-  ActivityIndicator, 
   ScrollView, 
   KeyboardAvoidingView, 
   Platform 
@@ -19,6 +18,7 @@ import api from '@/lib/api';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/context/AuthContext';
+import { LoadingOverlay } from '@/components/LoadingOverlay';
 
 const schema = z.object({ 
   title: z.string().min(3, 'O título deve ter pelo menos 3 caracteres'), 
@@ -42,15 +42,17 @@ export default function NewPost() {
   const [loading, setLoading] = useState(false);
 
   const onSubmit = async (data: FormData) => {
-    setLoading(true);
+    setLoading(true); // Bloqueia a tela
     try {
       await api.post('/posts', data);
-      Alert.alert('Sucesso', 'Post publicado com sucesso!');
-      router.back();
+      
+      // Sucesso: Redireciona EXPLICITAMENTE para o Feed (Home das abas)
+      // Isso fará o useFocusEffect da tela index.tsx rodar novamente
+      router.replace('/(tabs)');
+      
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível publicar o post.');
-    } finally {
-      setLoading(false);
+      setLoading(false); // Desbloqueia apenas em erro
     }
   };
 
@@ -77,6 +79,8 @@ export default function NewPost() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <LoadingOverlay visible={loading} message="Publicando..." />
+
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color="#1E293B" />
@@ -108,7 +112,7 @@ export default function NewPost() {
             disabled={loading} 
             style={styles.saveButton}
           >
-            {loading ? <ActivityIndicator color="white" /> : <Text style={styles.saveText}>Publicar</Text>}
+            <Text style={styles.saveText}>Publicar</Text>
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>

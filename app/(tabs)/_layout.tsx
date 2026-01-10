@@ -1,11 +1,20 @@
 import { Tabs } from 'expo-router';
-import { Platform } from 'react-native';
+import { Platform, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/context/AuthContext'; 
+import { LoadingOverlay } from '@/components/LoadingOverlay'; 
 
 export default function TabsLayout() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, backgroundColor: '#F8FAFC' }}>
+        <LoadingOverlay visible={true} message="Iniciando..." />
+      </View>
+    );
+  }
+
   const isAdmin = user?.role === 'professor';
 
   return (
@@ -51,7 +60,7 @@ export default function TabsLayout() {
         name="admin/docentes/index" 
         options={{ 
           title: 'Docentes',
-          href: isAdmin ? undefined : null, 
+          href: isAdmin ? undefined : null,
           tabBarIcon: ({ color, size }) => <Ionicons name="people-outline" size={size} color={color} />
         }} 
       />
@@ -60,7 +69,7 @@ export default function TabsLayout() {
         name="admin/alunos/index" 
         options={{ 
           title: 'Alunos',
-          href: isAdmin ? undefined : null, 
+          href: isAdmin ? undefined : null,
           tabBarIcon: ({ color, size }) => <Ionicons name="school-outline" size={size} color={color} />
         }} 
       />

@@ -1,30 +1,44 @@
-import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useRouter, useFocusEffect } from 'expo-router';
+import React, { useState, useCallback } from 'react';
 import { FlatList, Text, TextInput, TouchableOpacity, View, StyleSheet, SafeAreaView, StatusBar } from 'react-native';
 import api from '@/lib/api';
 import { Ionicons } from '@expo/vector-icons';
+import { LoadingOverlay } from '@/components/LoadingOverlay';
 
 type Post = { _id: string; title: string; content: string; author: string };
 
 export default function Posts() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [q, setQ] = useState('');
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const load = async () => {
+
+    if (!loading) setLoading(true);
+    
     const url = q ? `/posts/search?term=${encodeURIComponent(q)}` : '/posts';
     try {
       const res = await api.get(url);
       setPosts(res.data);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [q]) 
+  );
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Overlay para bloqueio visual enquanto carrega */}
+      <LoadingOverlay visible={loading} message="Atualizando Feed..." />
+      
       <StatusBar barStyle="dark-content" />
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Feed de Notícias</Text>
@@ -34,7 +48,7 @@ export default function Posts() {
         <View style={styles.inputWrapper}>
           <Ionicons name="search" size={20} color="#94A3B8" style={{ marginRight: 8 }} />
           <TextInput
-            placeholder="Buscar por palavra-chave..."
+            placeholder="Buscar..."
             placeholderTextColor="#94A3B8"
             value={q}
             onChangeText={setQ}

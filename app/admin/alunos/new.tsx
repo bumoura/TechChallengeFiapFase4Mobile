@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Text, TextInput, TouchableOpacity, View, Alert, StyleSheet, SafeAreaView, ActivityIndicator } from 'react-native';
+import { Text, TextInput, TouchableOpacity, View, Alert, StyleSheet, SafeAreaView } from 'react-native';
 import api from '@/lib/api';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { LoadingOverlay } from '@/components/LoadingOverlay';
 
 const schema = z.object({ 
   nome: z.string().min(2, 'O nome deve ter pelo menos 2 caracteres'), 
@@ -27,7 +28,6 @@ export default function NewAluno() {
       router.back();
     } catch (error) {
       Alert.alert('Erro', 'Falha ao cadastrar aluno.');
-    } finally {
       setLoading(false);
     }
   };
@@ -49,6 +49,8 @@ export default function NewAluno() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <LoadingOverlay visible={loading} message="Salvando..." />
+
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color="#1E293B" />
@@ -64,7 +66,7 @@ export default function NewAluno() {
         {errors.email && <Text style={styles.error}>{errors.email.message}</Text>}
         
         <TouchableOpacity onPress={handleSubmit(onSubmit)} disabled={loading} style={styles.saveButton}>
-          {loading ? <ActivityIndicator color="white" /> : <Text style={styles.saveText}>Salvar Cadastro</Text>}
+          <Text style={styles.saveText}>Salvar Cadastro</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
